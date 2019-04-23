@@ -8,12 +8,12 @@ import com.facebook.react.bridge.ReactMethod;
 
 import android.app.Application;
 import android.app.Activity;
-import android.widget.Toast;
-import android.util.Log;
+import android.support.text.emoji.EmojiCompat.InitCallback;
 
-import br.com.moip.mpos.Authentication;
-import br.com.moip.mpos.BasicAuth;
+import br.com.moip.authentication.Authentication;
+import br.com.moip.authentication.BasicAuth;
 import br.com.moip.mpos.MoipMpos;
+import br.com.moip.mpos.PinpadCallback;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
@@ -43,12 +43,14 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     // @ReactMethod
     // public void start() {
-    //     MoipMpos.init(activity, MoipMpos.Enviroment.SANBOX, authentication, new InitCallback() {
+    //     Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
+
+    //     MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
     //         public void onSuccess() {
-    //             Toast.makeText(getApplicationContext(), "Successo", Toast.LENGTH_LONG);
+    //             Callback.invoke("SDK iniciado");
     //         }
     //         public void onError(MposError e) {
-    //             Toast.makeText(getApplicationContext(), "Erro", Toast.LENGTH_LONG);
+    //             Callback.invoke("Erro ao iniciar SDK " + e.toString());
     //         }
     //     });
     // }
@@ -69,11 +71,6 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         });
     }
     
-    @ReactMethod
-    public void authenticate() {
-       Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
-    }
-
     public void setMaquininhaIsConnected(Boolean maquininhaIsCoonnected) {
         this.maquininhaIsConnected = maquininhaIsCoonnected;
     }
