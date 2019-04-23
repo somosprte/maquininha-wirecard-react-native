@@ -15,10 +15,16 @@ import java.util.List;
 
 public class WireCardPackage implements ReactPackage {
 
+    private Activity activity = null;
+
+    public WireCardPackage(Activity activity) {
+        this.activity = activity;
+    }
+
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(
-                new WireCardModule(reactContext)
+                new WireCardModule(reactContext, activity)
         );
     }
 
