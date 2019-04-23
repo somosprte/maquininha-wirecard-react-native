@@ -1,0 +1,3 @@
+rootProject.name = 'wirecardReactNativeBridge'
+
+include ':app'
