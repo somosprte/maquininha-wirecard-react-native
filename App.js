@@ -29,33 +29,44 @@ const styles = StyleSheet.create({
 
 class App extends Component {
   state = {
-    isOn: false,
+    maquininhaIsConnected: false,
   };
 
-  turnOn = () => {
-    NativeModules.WireCard.turnOn();
-    this.updateStatus()
+  testConnection = () => {
+    const { WireCard } = NativeModules;
+
+    WireCard.checkMaquininhaStatus();
+    this.updateStatus();
   }
-  turnOff = () => {
-    NativeModules.WireCard.turnOff();
-    this.updateStatus()
+
+  start = () => {
+    const { WireCard } = NativeModules;
+
+    WireCard.start();
   }
+
   updateStatus = () => {
-    NativeModules.WireCard.getStatus( (error, isOn)=>{
-    this.setState({ isOn: isOn});
-  })
+    const { WireCard } = NativeModules;
+
+    WireCard.getStatus((error, maquininhaIsConnected) => {
+      this.setState({ maquininhaIsConnected });
+    })
   }
 
   render() {
-    const { isOn } = this.state;
+    const { maquininhaIsConnected } = this.state;
 
     return (
       <View style={styles.container}>
-        <Text style={styles.instructions}>Bulb is {isOn ? "ON": "OFF"}</Text>
+        <Text style={styles.instructions}>Conexão com a maquininha {maquininhaIsConnected ? 'Conectada' : 'Desconectada'}</Text>
 
-        <TouchableOpacity onPress={isOn ? () => this.turnOff() : () => this.turnOn()}>
+        <TouchableOpacity onPress={this.start}>
+          <Text style={styles.instructions}>Iniciar SDK</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={this.testConnection}>
           <Text style={styles.instructions}>Testar conexão</Text>
-          </TouchableOpacity>
+        </TouchableOpacity>
       </View>
     );
   }
