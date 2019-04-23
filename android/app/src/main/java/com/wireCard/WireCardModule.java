@@ -8,12 +8,11 @@ import com.facebook.react.bridge.ReactMethod;
 
 import android.app.Application;
 import android.app.Activity;
-import android.support.text.emoji.EmojiCompat.InitCallback;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
 import br.com.moip.mpos.MoipMpos;
-import br.com.moip.mpos.PinpadCallback;
+// import br.com.moip.models.PinpadCallback;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
@@ -41,19 +40,19 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         successCallback.invoke(null, maquininhaIsConnected);
     }
 
-    // @ReactMethod
-    // public void start() {
-    //     Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
+    @ReactMethod
+    public void start() {
+        Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
-    //     MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
-    //         public void onSuccess() {
-    //             Callback.invoke("SDK iniciado");
-    //         }
-    //         public void onError(MposError e) {
-    //             Callback.invoke("Erro ao iniciar SDK " + e.toString());
-    //         }
-    //     });
-    // }
+        MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
+            public void onSuccess() {
+                Callback.invoke("SDK iniciado");
+            }
+            public void onError(MposError e) {
+                Callback.invoke("Erro ao iniciar SDK " + e.toString());
+            }
+        });
+    }
 
     @ReactMethod
     public void checkMaquininhaStatus() {
