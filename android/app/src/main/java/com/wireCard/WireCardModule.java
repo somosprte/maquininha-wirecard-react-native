@@ -13,16 +13,19 @@ import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
 import br.com.moip.mpos.MoipMpos;
 // import br.com.moip.models.PinpadCallback;
+// import br.com.moip.models.InitCallback;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
+
+    private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
+    private final String PASSWORD = "2UILDC1B7UI8VCVXADT0TDPB5GSM0EXGKBI0QA2A";
 
     private Activity activity;
     private ReactApplicationContext reactContext;
     private Callback callback;
     private Boolean maquininhaIsConnected = false;
-
-    private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
-    private final String PASSWORD = "2UILDC1B7UI8VCVXADT0TDPB5GSM0EXGKBI0QA2A";
+    private String authenticated;
+    private Authentication authentication;
 
     public WireCardModule(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
@@ -37,38 +40,42 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getStatus(Callback successCallback) {
-        successCallback.invoke(null, maquininhaIsConnected);
+        successCallback.invoke(null, authenticated);
     }
 
     @ReactMethod
-    public void start() {
-        Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
-
-        MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
-            public void onSuccess() {
-                Callback.invoke("SDK iniciado");
-            }
-            public void onError(MposError e) {
-                Callback.invoke("Erro ao iniciar SDK " + e.toString());
-            }
-        });
+    public void authenticate() {
+        authentication = new BasicAuth(TOKEN, PASSWORD);
+        this.setAuthenticated(authentication.toString());
     }
 
-    @ReactMethod
-    public void checkMaquininhaStatus() {
-        MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
-            @Override
-            public void onSuccess() {
-                this.setMaquininhaIsConnected(true);
-                Callback.invoke("A maquininha está conectada");
-            }
+    // @ReactMethod
+    // public void start() {
+    //     MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
+    //         public void onSuccess() {
+    //             Callback.invoke("SDK iniciado");
+    //         }
+    //         public void onError(MposError e) {
+    //             Callback.invoke("Erro ao iniciar SDK " + e.toString());
+    //         }
+    //     });
+    // }
+
+    // @ReactMethod
+    // public void checkMaquininhaStatus() {
+    //     MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
+    //         @Override
+    //         public void onSuccess() {
+    //             this.setMaquininhaIsConnected(true);
+    //             Callback.invoke("A maquininha está conectada");
+    //         }
         
-            public void onError(MposError e) {
-                this.setMaquininhaIsConnected(false);
-                Callback.invoke("A maquininha não está conectada");
-            }
-        });
-    }
+    //         public void onError(MposError e) {
+    //             this.setMaquininhaIsConnected(false);
+    //             Callback.invoke("A maquininha não está conectada");
+    //         }
+    //     });
+    // }
     
     public void setMaquininhaIsConnected(Boolean maquininhaIsCoonnected) {
         this.maquininhaIsConnected = maquininhaIsCoonnected;
@@ -76,6 +83,14 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getMaquininhaIsConnected() {
         return this.maquininhaIsConnected;
+    }
+
+    public void setAuthenticated(String authenticated) {
+        this.authenticated = authenticated;
+    }
+
+    public String getAuthenticated() {
+        return this.authenticated;
     }
 
 }

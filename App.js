@@ -30,7 +30,15 @@ const styles = StyleSheet.create({
 class App extends Component {
   state = {
     maquininhaIsConnected: false,
+    authenticated: '',
   };
+
+  authenticate = () => {
+    const { WireCard } = NativeModules;
+    
+    WireCard.authenticate();
+    this.updateStatus();
+  }
 
   testConnection = () => {
     const { WireCard } = NativeModules;
@@ -48,20 +56,20 @@ class App extends Component {
   updateStatus = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.getStatus((error, maquininhaIsConnected) => {
-      this.setState({ maquininhaIsConnected });
+    WireCard.getStatus((error, authenticated) => {
+      this.setState({ authenticated });
     })
   }
 
   render() {
-    const { maquininhaIsConnected } = this.state;
+    const { maquininhaIsConnected, authenticated } = this.state;
 
     return (
       <View style={styles.container}>
-        <Text style={styles.instructions}>Conexão com a maquininha {maquininhaIsConnected ? 'Conectada' : 'Desconectada'}</Text>
+        <Text style={styles.instructions}>{`Autenticação ${authenticated}`}</Text>
 
-        <TouchableOpacity onPress={this.start}>
-          <Text style={styles.instructions}>Iniciar SDK</Text>
+        <TouchableOpacity onPress={this.authenticate}>
+          <Text style={styles.instructions}>Autenticar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={this.testConnection}>
