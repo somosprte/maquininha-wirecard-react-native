@@ -8,12 +8,14 @@ import com.facebook.react.bridge.ReactMethod;
 
 import android.app.Application;
 import android.app.Activity;
+import android.widget.Toast;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
 import br.com.moip.mpos.MoipMpos;
+import br.com.moip.mpos.MposError;
 // import br.com.moip.models.PinpadCallback;
-// import br.com.moip.models.InitCallback;
+import br.com.moip.mpos.callback.InitCallback;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
@@ -23,9 +25,9 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private Activity activity;
     private ReactApplicationContext reactContext;
     private Callback callback;
-    private Boolean maquininhaIsConnected = false;
-    private String authenticated;
-    private Authentication authentication;
+    private Boolean maquininhaIsConnected;
+    private Boolean initialized;
+    private Boolean authenticated;
 
     public WireCardModule(ReactApplicationContext reactContext, Activity activity) {
         super(reactContext);
@@ -40,26 +42,26 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getStatus(Callback successCallback) {
-        successCallback.invoke(null, authenticated);
+        successCallback.invoke(null, initialized);
     }
 
     @ReactMethod
-    public void authenticate() {
-        authentication = new BasicAuth(TOKEN, PASSWORD);
-        this.setAuthenticated(authentication.toString());
-    }
+    public void start() {
+        Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
-    // @ReactMethod
-    // public void start() {
-    //     MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
-    //         public void onSuccess() {
-    //             Callback.invoke("SDK iniciado");
-    //         }
-    //         public void onError(MposError e) {
-    //             Callback.invoke("Erro ao iniciar SDK " + e.toString());
-    //         }
-    //     });
-    // }
+        if (authentication == null) {
+            Toast.makeText(getReactApplicationContext(), "Falha de autenticação", Toast.LENGTH_LONG).show();
+        } else {
+            MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
+                public void onSuccess() {
+                    Toast.makeText(getReactApplicationContext(), "SDK iniciado", Toast.LENGTH_LONG).show();
+                }
+                public void onError(MposError e) {
+                    Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    }
 
     // @ReactMethod
     // public void checkMaquininhaStatus() {
@@ -85,12 +87,20 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         return this.maquininhaIsConnected;
     }
 
-    public void setAuthenticated(String authenticated) {
+    public void setAuthenticated(Boolean authenticated) {
         this.authenticated = authenticated;
     }
 
-    public String getAuthenticated() {
+    public Boolean getAuthenticated() {
         return this.authenticated;
+    }
+
+    public void setInitialized(Boolean initialized) {
+        this.initialized = initialized;
+    }
+
+    public Boolean getInitialized() {
+        return this.initialized;
     }
 
 }
