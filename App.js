@@ -38,6 +38,7 @@ class App extends Component {
 
     WireCard.checkMaquininhaStatus(callback => {
       this.updateMaquininhaStatus();
+      
       Alert.alert(
         'Alert Title',
         callback,
@@ -74,6 +75,33 @@ class App extends Component {
     });
   }
 
+  charge = () => {
+    const { WireCard } = NativeModules;
+
+    const item = {
+      description: 'Produto/Serviço',
+      quantity: 1,
+      value: 50,
+      installments: 2,
+      id: 'TESTE TESTE',
+      type: 1,
+      secondary: '',
+      amount: 2,
+    };
+
+    WireCard.charge((item, callback) => {
+      Alert.alert(
+        'Alert Title',
+        callback,
+        [
+          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
+          { text: 'OK', onPress: () => { } },
+        ],
+        { cancelable: false },
+      );
+    });
+  }
+
   render() {
     const { SDKInitializated, maquininhaConnected } = this.state;
 
@@ -90,6 +118,10 @@ class App extends Component {
         </TouchableOpacity>
 
         <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
+
+        <TouchableOpacity onPress={this.charge} disabled={!SDKInitializated && !maquininhaConnected}>
+          <Text style={styles.instructions}>Realizar pagamento</Text>
+        </TouchableOpacity>
       </View>
     );
   }

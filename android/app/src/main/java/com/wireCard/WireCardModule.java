@@ -5,6 +5,8 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 import android.app.Application;
 import android.app.Activity;
@@ -89,7 +91,6 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                     public void onSuccess() {
                         setSDKInitializated(true);
                         checkStatus(callback);
-                        // callback.invoke("SDK inicializado");
                     }
 
                     public void onError(MposError e) {
@@ -129,48 +130,52 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void charge(JSONObject item, Callback callback) throws JSONException {
+    public void charge(ReadableMap item, Callback callback) throws JSONException {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
             Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
-            String description = String.valueOf(item.get("description"));
-            String details = String.valueOf(item.get("details"));
-            String id = String.valueOf(item.get("id"));
-            int quantity = (Integer) item.get("quantity");
-            int value = (Integer) item.get("value");
-            int type = (Integer) item.get("type");
-            int installments = (Integer) item.get("installments");
+            JSONObject object = convertMapToJson(item);
 
-            ItemRequest itemRequest = new ItemRequest(description, quantity, details, value);
+            if (object != null) {
+                String description = String.valueOf(object.get("description"));
+                String details = String.valueOf(object.get("details"));
+                String id = String.valueOf(object.get("id"));
+                int quantity = (Integer) object.get("quantity");
+                int value = (Integer) object.get("value");
+                int type = (Integer) object.get("type");
+                int installments = (Integer) object.get("installments");
 
-            List items = Arrays.asList(itemRequest);
+                ItemRequest itemRequest = new ItemRequest(description, quantity, details, value);
 
-            MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.DEBIT
-                    : MposPaymentRequest.Type.CREDIT;
+                List items = Arrays.asList(itemRequest);
 
-            MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installments).ownId(id)
-                    .type(transactionType).items(items);
+                MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.DEBIT
+                        : MposPaymentRequest.Type.CREDIT;
 
-            MoipMpos.charge(this.activity, mposPaymentRequest, new MposCallback() {
-                @Override
-                public void onActionChanged(MposAction action) {
-                    setStatus(action.toString());
-                    setStatusCleared(false);
-                }
+                MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installments).ownId(id)
+                        .type(transactionType).items(items);
 
-                @Override
-                public void onSuccess(MposPaymentResponse mposPaymentResponse) {
-                    callback.invoke(mposPaymentResponse.toString());
-                    setStatusCleared(false);
-                }
+                MoipMpos.charge(this.activity, mposPaymentRequest, new MposCallback() {
+                    @Override
+                    public void onActionChanged(MposAction action) {
+                        setStatus(action.toString());
+                        setStatusCleared(false);
+                    }
 
-                public void onError(MposError e) {
-                    callback.invoke(e.toString());
-                    setStatusCleared(false);
-                }
-            });
+                    @Override
+                    public void onSuccess(MposPaymentResponse mposPaymentResponse) {
+                        callback.invoke(mposPaymentResponse.toString());
+                        setStatusCleared(false);
+                    }
+
+                    public void onError(MposError e) {
+                        callback.invoke(e.toString());
+                        setStatusCleared(false);
+                    }
+                });
+            }
         }
     }
 
@@ -193,6 +198,35 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                 }
             }
         }, delay, interval);
+    }
+
+    private static JSONObject convertMapToJson(ReadableMap map) throws JSONException {
+        JSONObject object = new JSONObject();
+        ReadableMapKeySetIterator iterator = map.keySetIterator();
+        while (iterator.hasNextKey()) {
+            String key = iterator.nextKey();
+            switch (map.getType(key)) {
+            case Null:
+                object.put(key, JSONObject.NULL);
+                break;
+            case Boolean:
+                object.put(key, map.getBoolean(key));
+                break;
+            case Number:
+                object.put(key, map.getInt(key));
+                break;
+            case String:
+                object.put(key, map.getString(key));
+                break;
+            // case Map:
+            // object.put(key, convertMapToJson(readableMap.getMap(key)));
+            // break;
+            // case Array:
+            // object.put(key, convertArrayToJson(readableMap.getArray(key)));
+            // break;
+            }
+        }
+        return object;
     }
 
     public void setActivity(Activity activity) {
