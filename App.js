@@ -82,6 +82,7 @@ class App extends Component {
       description: 'Produto/Serviço',
       quantity: 1,
       value: 50,
+      details: 'Teste',
       installments: 2,
       id: 'TESTE TESTE',
       type: 1,
@@ -89,7 +90,7 @@ class App extends Component {
       amount: 2,
     };
 
-    WireCard.charge((item, callback) => {
+    WireCard.charge(item, (callback) => {
       Alert.alert(
         'Alert Title',
         callback,
