@@ -33,12 +33,6 @@ class App extends Component {
     SDKInitializated: false,
   };
 
-  authenticate = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.authenticate();
-  }
-
   checkMaquininhaStatus = () => {
     const { WireCard } = NativeModules;
 
@@ -61,22 +55,13 @@ class App extends Component {
 
     WireCard.init(callback => {
       this.updateSDKStatus();
-      Alert.alert(
-        'Status do SDK',
-        callback,
-        [
-          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
-          { text: 'OK', onPress: () => { } },
-        ],
-        { cancelable: false },
-      );
     });
   }
 
   updateSDKStatus = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.getSDKStatus((error, SDKInitializated) => {
+    WireCard.getSDKStatus(SDKInitializated => {
       this.setState({ SDKInitializated });
     });
   }
@@ -84,7 +69,7 @@ class App extends Component {
   updateMaquininhaStatus = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.getMaquininhaStatus((error, maquininhaConnected) => {
+    WireCard.getMaquininhaStatus(maquininhaConnected => {
       this.setState({ maquininhaConnected });
     });
   }
@@ -97,6 +82,8 @@ class App extends Component {
         <TouchableOpacity onPress={this.init}>
           <Text style={styles.instructions}>Iniciar SDK</Text>
         </TouchableOpacity>
+
+        <Text>SDK {SDKInitializated ? 'inicializado' : 'não inicializado'}</Text>
 
         <TouchableOpacity onPress={this.checkMaquininhaStatus} disabled={!SDKInitializated}>
           <Text style={styles.instructions}>Testar conexão com a maquininha</Text>
