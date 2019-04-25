@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, NativeModules, NativeEventEmitter, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, Text, View, NativeModules, Alert, TouchableOpacity } from 'react-native';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -39,30 +39,56 @@ class App extends Component {
     WireCard.authenticate();
   }
 
-  testConnection = () => {
+  checkMaquininhaStatus = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.checkMaquininhaStatus();
+    WireCard.checkMaquininhaStatus(callback => {
+      Alert.alert(
+        'Alert Title',
+        callback,
+        [
+          {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        {cancelable: false},
+      );
+    });
   }
 
-  start = () => {
+  init = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.start();
+    WireCard.init(callback => {
+      Alert.alert(
+        'Alert Title',
+        callback,
+        [
+          {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        {cancelable: false},
+      );
+    });
   }
 
   render() {
-    const { initialized, authenticated } = this.state;
-
     return (
       <View style={styles.container}>
-        <Text style={styles.instructions}>{`SDK inicializado ${initialized}`}</Text>
-
-        <TouchableOpacity onPress={this.start}>
+        <TouchableOpacity onPress={this.init}>
           <Text style={styles.instructions}>Iniciar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={this.testConnection}>
+        <TouchableOpacity onPress={this.checkMaquininhaStatus}>
           <Text style={styles.instructions}>Testar conexão</Text>
         </TouchableOpacity>
       </View>
