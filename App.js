@@ -29,13 +29,13 @@ const styles = StyleSheet.create({
 
 class App extends Component {
   state = {
-    maquininhaIsConnected: false,
-    initialized: false,
+    maquininhaConnected: false,
+    SDKInitializated: false,
   };
 
   authenticate = () => {
     const { WireCard } = NativeModules;
-    
+
     WireCard.authenticate();
   }
 
@@ -43,19 +43,15 @@ class App extends Component {
     const { WireCard } = NativeModules;
 
     WireCard.checkMaquininhaStatus(callback => {
+      this.updateMaquininhaStatus();
       Alert.alert(
         'Alert Title',
         callback,
         [
-          {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-          },
-          {text: 'OK', onPress: () => console.log('OK Pressed')},
+          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
+          { text: 'OK', onPress: () => { } },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     });
   }
@@ -64,33 +60,49 @@ class App extends Component {
     const { WireCard } = NativeModules;
 
     WireCard.init(callback => {
+      this.updateSDKStatus();
       Alert.alert(
-        'Alert Title',
+        'Status do SDK',
         callback,
         [
-          {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-          },
-          {text: 'OK', onPress: () => console.log('OK Pressed')},
+          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
+          { text: 'OK', onPress: () => { } },
         ],
-        {cancelable: false},
+        { cancelable: false },
       );
     });
   }
 
+  updateSDKStatus = () => {
+    const { WireCard } = NativeModules;
+
+    WireCard.getSDKStatus((error, SDKInitializated) => {
+      this.setState({ SDKInitializated });
+    });
+  }
+
+  updateMaquininhaStatus = () => {
+    const { WireCard } = NativeModules;
+
+    WireCard.getMaquininhaStatus((error, maquininhaConnected) => {
+      this.setState({ maquininhaConnected });
+    });
+  }
+
   render() {
+    const { SDKInitializated, maquininhaConnected } = this.state;
+
     return (
       <View style={styles.container}>
         <TouchableOpacity onPress={this.init}>
-          <Text style={styles.instructions}>Iniciar</Text>
+          <Text style={styles.instructions}>Iniciar SDK</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={this.checkMaquininhaStatus}>
-          <Text style={styles.instructions}>Testar conexão</Text>
+        <TouchableOpacity onPress={this.checkMaquininhaStatus} disabled={!SDKInitializated}>
+          <Text style={styles.instructions}>Testar conexão com a maquininha</Text>
         </TouchableOpacity>
+
+        <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
       </View>
     );
   }
