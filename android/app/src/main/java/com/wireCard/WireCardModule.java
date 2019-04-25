@@ -26,6 +26,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private Activity activity;
     private ReactApplicationContext reactContext;
     private Boolean SDKInitializated;
+    private Boolean maquininhaConnected;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -38,8 +39,13 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getSDKStatus(Callback successCallback) {
-        successCallback.invoke(null, SDKInitializated);
+    public void getSDKStatus(Callback callback) {
+        callback.invoke(null, SDKInitializated);
+    }
+
+    @ReactMethod
+    public void getMaquininhaStatus(Callback callback) {
+        callback.invoke(null, maquininhaConnected);
     }
 
     @ReactMethod
@@ -56,8 +62,8 @@ public class WireCardModule extends ReactContextBaseJavaModule {
             } else {
                 MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
                     public void onSuccess() {
-                        callback.invoke("SDK inicializado");
                         setSDKInitializated(true);
+                        callback.invoke("SDK inicializado");
                     }
 
                     public void onError(MposError e) {
@@ -74,14 +80,16 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            callback.invoke("Erro de activity");
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
                 public void onSuccess() {
+                    setMaquininhaConnected(true);
                     callback.invoke("Maquininha conectada");
                 }
     
                 public void onError(MposError e) {
+                    setMaquininhaConnected(false);
                     callback.invoke(e.toString());
                 }
     
@@ -115,6 +123,14 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getSDKInitializated() {
         return this.SDKInitializated;
+    }
+
+    public void setMaquininhaConnected(Boolean maquininhaConnected) {
+        this.maquininhaConnected = maquininhaConnected;
+    }
+
+    public Boolean getMaquininhaConnected() {
+        return this.maquininhaConnected;
     }
 
 }
