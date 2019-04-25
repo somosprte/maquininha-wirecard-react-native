@@ -8,13 +8,13 @@ import com.facebook.react.bridge.ReactMethod;
 
 import android.app.Application;
 import android.app.Activity;
-import android.widget.Toast;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
 import br.com.moip.mpos.MoipMpos;
 import br.com.moip.mpos.MposError;
-// import br.com.moip.models.PinpadCallback;
+import br.com.moip.mpos.MposAction;
+import br.com.moip.mpos.callback.PinpadCallback;
 import br.com.moip.mpos.callback.InitCallback;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
@@ -24,15 +24,10 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     private Activity activity;
     private ReactApplicationContext reactContext;
-    private Callback callback;
-    private Boolean maquininhaIsConnected;
-    private Boolean initialized;
-    private Boolean authenticated;
 
-    public WireCardModule(ReactApplicationContext reactContext, Activity activity) {
+    public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
-        this.activity = activity;
     }
 
     @Override
@@ -41,66 +36,54 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getStatus(Callback successCallback) {
-        successCallback.invoke(null, initialized);
-    }
+    public void init(Callback callback) {
+        this.setActivity(getCurrentActivity());
 
-    @ReactMethod
-    public void start() {
-        Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
-
-        if (authentication == null) {
-            Toast.makeText(getReactApplicationContext(), "Falha de autenticação", Toast.LENGTH_LONG).show();
+        if (this.getActivity() == null) {
+            callback.invoke("Erro de activity");
         } else {
-            MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
-                public void onSuccess() {
-                    Toast.makeText(getReactApplicationContext(), "SDK iniciado", Toast.LENGTH_LONG).show();
-                }
-                public void onError(MposError e) {
-                    Toast.makeText(getReactApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                }
-            });
+            Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
+
+            if (authentication == null) {
+                callback.invoke("Falha de autenticação");
+            } else {
+                MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
+                    public void onSuccess() {
+                        callback.invoke("SDK iniciado");
+                    }
+
+                    public void onError(MposError e) {
+                        callback.invoke(e.toString());
+                    }
+                });
+            }
         }
     }
 
-    // @ReactMethod
-    // public void checkMaquininhaStatus() {
-    //     MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
-    //         @Override
-    //         public void onSuccess() {
-    //             this.setMaquininhaIsConnected(true);
-    //             Callback.invoke("A maquininha está conectada");
-    //         }
-        
-    //         public void onError(MposError e) {
-    //             this.setMaquininhaIsConnected(false);
-    //             Callback.invoke("A maquininha não está conectada");
-    //         }
-    //     });
-    // }
-    
-    public void setMaquininhaIsConnected(Boolean maquininhaIsCoonnected) {
-        this.maquininhaIsConnected = maquininhaIsCoonnected;
+    @ReactMethod
+    public void checkMaquininhaStatus(Callback callback) {
+        MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
+            public void onSuccess() {
+                callback.invoke("Maquininha conectada");
+            }
+
+            public void onError(MposError e) {
+                callback.invoke(e.toString());
+            }
+
+            @Override
+            public void onActionChanged(MposAction action) {
+                callback.invoke(action.getMessage());
+            }
+        });
     }
 
-    public Boolean getMaquininhaIsConnected() {
-        return this.maquininhaIsConnected;
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
-    public void setAuthenticated(Boolean authenticated) {
-        this.authenticated = authenticated;
-    }
-
-    public Boolean getAuthenticated() {
-        return this.authenticated;
-    }
-
-    public void setInitialized(Boolean initialized) {
-        this.initialized = initialized;
-    }
-
-    public Boolean getInitialized() {
-        return this.initialized;
+    public Activity getActivity() {
+        return this.activity;
     }
 
 }
