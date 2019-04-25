@@ -18,6 +18,9 @@ import br.com.moip.mpos.MposAction;
 import br.com.moip.mpos.callback.PinpadCallback;
 import br.com.moip.mpos.callback.InitCallback;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class WireCardModule extends ReactContextBaseJavaModule {
 
     private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
@@ -27,10 +30,14 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private ReactApplicationContext reactContext;
     private Boolean SDKInitializated;
     private Boolean maquininhaConnected;
+    private String status;
+    private Boolean statusCleared;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.reactContext = reactContext;
+        this.status = null;
+        this.statusCleared = true;
     }
 
     @Override
@@ -40,12 +47,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getSDKStatus(Callback callback) {
-        callback.invoke(null, SDKInitializated);
+        callback.invoke(this.getSDKInitializated());
     }
 
     @ReactMethod
     public void getMaquininhaStatus(Callback callback) {
-        callback.invoke(null, maquininhaConnected);
+        callback.invoke(this.getMaquininhaConnected());
     }
 
     @ReactMethod
@@ -60,10 +67,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
             if (authentication == null) {
                 Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
             } else {
+                setStatusCleared(false);
                 MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
                     public void onSuccess() {
                         setSDKInitializated(true);
-                        callback.invoke("SDK inicializado");
+                        checkStatus(callback);
+                        // callback.invoke("SDK inicializado");
                     }
 
                     public void onError(MposError e) {
@@ -95,11 +104,33 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     
                 @Override
                 public void onActionChanged(MposAction action) {
-                    callback.invoke(action.getMessage());
+                    setStatus(action.toString());
+                    setStatusCleared(false);
                 }
             });
         }
     }
+
+    private void checkStatus(Callback callback) {
+		int delay = 0;
+		int interval = 100;
+		Timer timer = new Timer();
+		int timeout = 60000; // 60 seconds
+		long startTime = System.currentTimeMillis();
+		
+		timer.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				if (!getStatusCleared()) {
+					setStatusCleared(true);
+					callback.invoke(getStatus());
+					timer.cancel();
+				} else if (System.currentTimeMillis()-startTime > timeout) {
+					callback.invoke("timeout");
+					timer.cancel();
+				}
+			}
+		}, delay, interval);
+	}
 
     public void setActivity(Activity activity) {
         this.activity = activity;
@@ -131,6 +162,22 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getMaquininhaConnected() {
         return this.maquininhaConnected;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return this.status;
+    }
+
+    public void setStatusCleared(Boolean statusCleared) {
+        this.statusCleared = statusCleared;
+    }
+
+    public Boolean getStatusCleared() {
+        return this.statusCleared;
     }
 
 }
