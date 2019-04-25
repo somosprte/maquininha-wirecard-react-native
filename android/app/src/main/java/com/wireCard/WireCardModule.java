@@ -12,14 +12,31 @@ import android.widget.Toast;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
+
+import br.com.moip.request.ItemRequest;
+import br.com.moip.request.MposRequest;
+import br.com.moip.request.ReceiverRequest;
+import br.com.moip.request.AmountRequest;
+
 import br.com.moip.mpos.MoipMpos;
 import br.com.moip.mpos.MposError;
 import br.com.moip.mpos.MposAction;
+
 import br.com.moip.mpos.callback.PinpadCallback;
 import br.com.moip.mpos.callback.InitCallback;
+import br.com.moip.mpos.callback.MposCallback;
+
+import br.com.moip.mpos.model.request.MposPaymentRequest;
+import br.com.moip.mpos.model.response.MposPaymentResponse;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Arrays;
+import java.util.List;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
@@ -96,12 +113,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                     setMaquininhaConnected(true);
                     callback.invoke("Maquininha conectada");
                 }
-    
+
                 public void onError(MposError e) {
                     setMaquininhaConnected(false);
                     callback.invoke(e.toString());
                 }
-    
+
                 @Override
                 public void onActionChanged(MposAction action) {
                     setStatus(action.toString());
@@ -111,26 +128,72 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void charge(JSONObject item, Callback callback) throws JSONException {
+        this.setActivity(getCurrentActivity());
+
+        if (this.getActivity() == null) {
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+        } else {
+            String description = String.valueOf(item.get("description"));
+            String details = String.valueOf(item.get("details"));
+            String id = String.valueOf(item.get("id"));
+            int quantity = (Integer) item.get("quantity");
+            int value = (Integer) item.get("value");
+            int type = (Integer) item.get("type");
+            int installments = (Integer) item.get("installments");
+
+            ItemRequest itemRequest = new ItemRequest(description, quantity, details, value);
+
+            List items = Arrays.asList(itemRequest);
+
+            MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.DEBIT
+                    : MposPaymentRequest.Type.CREDIT;
+
+            MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installments).ownId(id)
+                    .type(transactionType).items(items);
+
+            MoipMpos.charge(this.activity, mposPaymentRequest, new MposCallback() {
+                @Override
+                public void onActionChanged(MposAction action) {
+                    setStatus(action.toString());
+                    setStatusCleared(false);
+                }
+
+                @Override
+                public void onSuccess(MposPaymentResponse mposPaymentResponse) {
+                    callback.invoke(mposPaymentResponse.toString());
+                    setStatusCleared(false);
+                }
+
+                public void onError(MposError e) {
+                    callback.invoke(e.toString());
+                    setStatusCleared(false);
+                }
+            });
+        }
+    }
+
     private void checkStatus(Callback callback) {
-		int delay = 0;
-		int interval = 100;
-		Timer timer = new Timer();
-		int timeout = 60000; // 60 seconds
-		long startTime = System.currentTimeMillis();
-		
-		timer.scheduleAtFixedRate(new TimerTask() {
-			public void run() {
-				if (!getStatusCleared()) {
-					setStatusCleared(true);
-					callback.invoke(getStatus());
-					timer.cancel();
-				} else if (System.currentTimeMillis()-startTime > timeout) {
-					callback.invoke("timeout");
-					timer.cancel();
-				}
-			}
-		}, delay, interval);
-	}
+        int delay = 0;
+        int interval = 100;
+        Timer timer = new Timer();
+        int timeout = 60000; // 60 seconds
+        long startTime = System.currentTimeMillis();
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                if (!getStatusCleared()) {
+                    setStatusCleared(true);
+                    callback.invoke(getStatus());
+                    timer.cancel();
+                } else if (System.currentTimeMillis() - startTime > timeout) {
+                    callback.invoke("timeout");
+                    timer.cancel();
+                }
+            }
+        }, delay, interval);
+    }
 
     public void setActivity(Activity activity) {
         this.activity = activity;
