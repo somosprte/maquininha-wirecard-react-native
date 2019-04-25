@@ -8,6 +8,7 @@ import com.facebook.react.bridge.ReactMethod;
 
 import android.app.Application;
 import android.app.Activity;
+import android.widget.Toast;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
@@ -24,6 +25,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     private Activity activity;
     private ReactApplicationContext reactContext;
+    private Boolean SDKInitializated;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -36,23 +38,30 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getSDKStatus(Callback successCallback) {
+        successCallback.invoke(null, SDKInitializated);
+    }
+
+    @ReactMethod
     public void init(Callback callback) {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            callback.invoke("Erro de activity");
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
             if (authentication == null) {
-                callback.invoke("Falha de autenticação");
+                Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
             } else {
                 MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
                     public void onSuccess() {
-                        callback.invoke("SDK iniciado");
+                        callback.invoke("SDK inicializado");
+                        setSDKInitializated(true);
                     }
 
                     public void onError(MposError e) {
+                        setSDKInitializated(false);
                         callback.invoke(e.toString());
                     }
                 });
@@ -62,20 +71,26 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkMaquininhaStatus(Callback callback) {
-        MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
-            public void onSuccess() {
-                callback.invoke("Maquininha conectada");
-            }
+        this.setActivity(getCurrentActivity());
 
-            public void onError(MposError e) {
-                callback.invoke(e.toString());
-            }
-
-            @Override
-            public void onActionChanged(MposAction action) {
-                callback.invoke(action.getMessage());
-            }
-        });
+        if (this.getActivity() == null) {
+            callback.invoke("Erro de activity");
+        } else {
+            MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
+                public void onSuccess() {
+                    callback.invoke("Maquininha conectada");
+                }
+    
+                public void onError(MposError e) {
+                    callback.invoke(e.toString());
+                }
+    
+                @Override
+                public void onActionChanged(MposAction action) {
+                    callback.invoke(action.getMessage());
+                }
+            });
+        }
     }
 
     public void setActivity(Activity activity) {
@@ -84,6 +99,22 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Activity getActivity() {
         return this.activity;
+    }
+
+    public void setReactcontext(ReactApplicationContext reactContext) {
+        this.reactContext = reactContext;
+    }
+
+    public ReactApplicationContext getReactContext() {
+        return this.reactContext;
+    }
+
+    public void setSDKInitializated(Boolean SDKInitializated) {
+        this.SDKInitializated = SDKInitializated;
+    }
+
+    public Boolean getSDKInitializated() {
+        return this.SDKInitializated;
     }
 
 }
