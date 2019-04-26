@@ -99,13 +99,11 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
                 }
             }
 
-            if (deniedcount == 0) {
-                this.setLocationPermissionState(true);
-                this.setReadPhoneStatePermissionState(true);
-                this.setStoragePermissionState(true);
+            this.setLocationPermissionState(deniedcount == 0 ? true : false);
+            this.setReadPhoneStatePermissionState(deniedcount == 0 ? true : false);
+            this.setStoragePermissionState(deniedcount == 0 ? true : false);
 
-                return true;
-            }
+            return deniedcount == 0 ? true : false;
         }
         return false;
     }
