@@ -8,9 +8,17 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
+import com.facebook.react.modules.core.PermissionListener;
+
 import android.app.Application;
 import android.app.Activity;
 import android.widget.Toast;
+
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.content.Context;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
@@ -39,11 +47,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-public class WireCardModule extends ReactContextBaseJavaModule {
+public class WireCardModule extends ReactContextBaseJavaModule implements PermissionListener {
 
     private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
     private final String PASSWORD = "2UILDC1B7UI8VCVXADT0TDPB5GSM0EXGKBI0QA2A";
+    private final String[] PERMISSIONS = {
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_PHONE_STATE
+    };
+    private final int PERMISSION_CODE_REQUEST = 1;
 
     private Activity activity;
     private ReactApplicationContext reactContext;
@@ -51,6 +67,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private Boolean maquininhaConnected;
     private String status;
     private Boolean statusCleared;
+    private int locationPermission;
+    private int storagePermission;
+    private int readPhoneStatePermission;
+    private Boolean locationPermissionState;
+    private Boolean storagePermissionState;
+    private Boolean readPhoneStatePermissionState;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -62,6 +84,30 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     @Override
     public String getName() {
         return "WireCard";
+    }
+
+    @Override
+    public boolean onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == PERMISSION_CODE_REQUEST) {
+            HashMap<String, Integer> permissionsResult = new HashMap<String, Integer>();
+            int deniedcount = 0;
+
+            for (int index = 0; index < grantResults.length; index++) {
+                if (grantResults[index] == PackageManager.PERMISSION_DENIED) {
+                    permissionsResult.put(permissions[index], grantResults[index]);
+                    deniedcount++;
+                }
+            }
+
+            if (deniedcount == 0) {
+                this.setLocationPermissionState(true);
+                this.setReadPhoneStatePermissionState(true);
+                this.setStoragePermissionState(true);
+
+                return true;
+            }
+        }
+        return false;
     }
 
     @ReactMethod
@@ -81,23 +127,25 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         if (this.getActivity() == null) {
             Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
-            Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
+            if (this.hasPermissions(PERMISSIONS)) {
+                Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
-            if (authentication == null) {
-                Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
-            } else {
-                setStatusCleared(false);
-                MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
-                    public void onSuccess() {
-                        setSDKInitializated(true);
-                        checkStatus(callback);
-                    }
+                if (authentication == null) {
+                    Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
+                } else {
+                    setStatusCleared(false);
+                    MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
+                        public void onSuccess() {
+                            setSDKInitializated(true);
+                            checkStatus(callback);
+                        }
 
-                    public void onError(MposError e) {
-                        setSDKInitializated(false);
-                        callback.invoke(e.toString());
-                    }
-                });
+                        public void onError(MposError e) {
+                            setSDKInitializated(false);
+                            callback.invoke(e.toString());
+                        }
+                    });
+                }       
             }
         }
     }
@@ -229,6 +277,23 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         return object;
     }
 
+    private boolean hasPermissions(String... permissions) {
+        List<String> permissionsNeeded = new ArrayList<String>();
+
+        for (String permission : permissions) {
+            if (ActivityCompat.checkSelfPermission(this.getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(permission);
+            }
+        }
+
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this.getActivity(), permissionsNeeded.toArray(new String[permissionsNeeded.size()]), PERMISSION_CODE_REQUEST);
+            return false;
+        }
+
+        return true;
+    }
+
     public void setActivity(Activity activity) {
         this.activity = activity;
     }
@@ -275,6 +340,42 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getStatusCleared() {
         return this.statusCleared;
+    }
+
+    public void setStoragePermissionState(Boolean storagePermissionState) {
+        this.storagePermissionState = storagePermissionState;
+    }
+
+    public Boolean getStoragePermissionState() {
+        return this.storagePermissionState;
+    }
+
+    public void setLocationPermissionState(Boolean locationPermissionState) {
+        this.locationPermissionState = locationPermissionState;
+    }
+
+    public Boolean getLocationPermissionState() {
+        return this.locationPermissionState;
+    }
+
+    public void setReadPhoneStatePermissionState(Boolean readPhoneStatePermissionState) {
+        this.readPhoneStatePermissionState = readPhoneStatePermissionState;
+    }
+
+    public Boolean getReadPhoneStatePermissionState() {
+        return this.readPhoneStatePermissionState;
+    }
+
+    public int getLocationPermition() {
+        return this.locationPermission;
+    }
+
+    public int getStoragePermission() {
+        return this.storagePermission;
+    }
+
+    public int getReadPhoneStatePermission() {
+        return this.readPhoneStatePermission;
     }
 
 }
