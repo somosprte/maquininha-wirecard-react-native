@@ -12,13 +12,18 @@ import com.facebook.react.modules.core.PermissionListener;
 
 import android.app.Application;
 import android.app.Activity;
+
 import android.widget.Toast;
 
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.ActivityCompat;
+
 import android.Manifest;
+
 import android.content.pm.PackageManager;
 import android.content.Context;
+
+import android.os.Build;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
@@ -67,9 +72,6 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
     private Boolean maquininhaConnected;
     private String status;
     private Boolean statusCleared;
-    private int locationPermission;
-    private int storagePermission;
-    private int readPhoneStatePermission;
     private Boolean locationPermissionState;
     private Boolean storagePermissionState;
     private Boolean readPhoneStatePermissionState;
@@ -90,20 +92,34 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
     public boolean onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == PERMISSION_CODE_REQUEST) {
             HashMap<String, Integer> permissionsResult = new HashMap<String, Integer>();
-            int deniedcount = 0;
+            int permissionsDenied = 0;
 
             for (int index = 0; index < grantResults.length; index++) {
                 if (grantResults[index] == PackageManager.PERMISSION_DENIED) {
                     permissionsResult.put(permissions[index], grantResults[index]);
-                    deniedcount++;
+                    permissionsDenied++;
                 }
             }
 
-            this.setLocationPermissionState(deniedcount == 0 ? true : false);
-            this.setReadPhoneStatePermissionState(deniedcount == 0 ? true : false);
-            this.setStoragePermissionState(deniedcount == 0 ? true : false);
+            if (permissionsDenied == 0) {
+                this.setLocationPermissionState(true);
+                this.setReadPhoneStatePermissionState(true);
+                this.setStoragePermissionState(true);
 
-            return deniedcount == 0 ? true : false;
+                return true;
+            }
+            // else {
+            //     for (Map.Entry<String, Integer> entry : permissionsResult.entrySet()) {
+            //         String permissionName = entry.getKey();
+            //         int permissionResult = entry.getValue();
+
+            //         if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(), permissionName)) {
+                        
+            //         }
+            //     }
+            // }
+
+            
         }
         return false;
     }
@@ -225,6 +241,13 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
         }
     }
 
+    /**
+     * Used to works as a background task, listening to all SDK or wirecard pinpad events
+     * 
+     * @param callback
+     * @author Lucas Gabriel
+     * @since 26/04/2019
+     */
     private void checkStatus(Callback callback) {
         int delay = 0;
         int interval = 100;
@@ -275,6 +298,12 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
         return object;
     }
 
+    /**
+     * This method requests application's necessary permissions to the device, to handle all SDK's functionalities
+     * 
+     * @author Lucas Gabriel
+     * @since 26/04/2019
+     */
     private boolean hasPermissions(String... permissions) {
         List<String> permissionsNeeded = new ArrayList<String>();
 
@@ -362,18 +391,6 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
 
     public Boolean getReadPhoneStatePermissionState() {
         return this.readPhoneStatePermissionState;
-    }
-
-    public int getLocationPermition() {
-        return this.locationPermission;
-    }
-
-    public int getStoragePermission() {
-        return this.storagePermission;
-    }
-
-    public int getReadPhoneStatePermission() {
-        return this.readPhoneStatePermission;
     }
 
 }
