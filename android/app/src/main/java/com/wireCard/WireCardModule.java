@@ -15,15 +15,22 @@ import android.app.Activity;
 
 import android.widget.Toast;
 
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.ActivityCompat;
-
 import android.Manifest;
 
 import android.content.pm.PackageManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.DialogInterface;
+
+import android.net.Uri;
 
 import android.os.Build;
+
+import android.provider.Settings;
+
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
@@ -53,6 +60,7 @@ import java.util.TimerTask;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashMap;
 
 public class WireCardModule extends ReactContextBaseJavaModule implements PermissionListener {
@@ -114,12 +122,46 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
             //         int permissionResult = entry.getValue();
 
             //         if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(), permissionName)) {
-                        
+            //            showDialog("", "As permissões são necessárias para o uso do SDK", "Habilitar permissões", 
+            //                 new DialogInterface.OnClickListener() {
+            //                     @Override
+            //                     public void onClick(DialogInterface dialog, int i) {
+            //                         dialog.dismiss();
+            //                         hasPermissions();
+            //                     }
+            //            },
+            //            "Não, fechar aplicativo", new DialogInterface.OnClickListener() {
+            //                 @Override
+            //                 public void onClick(DialogInterface dialog, int i) {
+            //                     dialog.dismiss();
+            //                     getActivity().finish();
+            //                 }
+            //            }, false);
+            //         } else {
+            //             showDialog("", "Para habilitar as permissões vá para [Configurações] > [Permissões]", "Vá para configurações",
+            //                 new DialogInterface.OnClickListener() {
+            //                     @Override
+            //                     public void onClick(DialogInterface dialog, int i) {
+            //                         dialog.dismiss();
+                                    
+            //                         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            //                             Uri.fromParts("package", getReactContext().getPackageName(), null));
+            //                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //                         getActivity().startActivity(intent);
+            //                         getActivity().finish();
+            //                     }
+            //                 },
+            //                 "Não, fechar aplicativo", new DialogInterface.OnClickListener() {
+            //                     @Override
+            //                     public void onClick(DialogInterface dialog, int i) {
+            //                         dialog.dismiss();
+            //                         getActivity().finish();
+            //                     }
+            //                }, false);
             //         }
             //     }
+            //     return false;
             // }
-
-            
         }
         return false;
     }
@@ -141,7 +183,7 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
         if (this.getActivity() == null) {
             Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
-            if (this.hasPermissions(PERMISSIONS)) {
+            if (this.hasPermissions()) {
                 Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
                 if (authentication == null) {
@@ -304,10 +346,10 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
      * @author Lucas Gabriel
      * @since 26/04/2019
      */
-    private boolean hasPermissions(String... permissions) {
+    private boolean hasPermissions() {
         List<String> permissionsNeeded = new ArrayList<String>();
 
-        for (String permission : permissions) {
+        for (String permission : PERMISSIONS) {
             if (ActivityCompat.checkSelfPermission(this.getActivity(), permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded.add(permission);
             }
@@ -319,6 +361,22 @@ public class WireCardModule extends ReactContextBaseJavaModule implements Permis
         }
 
         return true;
+    }
+
+    public AlertDialog showDialog(String title, String message, String positiveLabel, DialogInterface.OnClickListener positiveOnClick,
+                    String negativeLabel, DialogInterface.OnClickListener negativeOnClick, boolean cancelable)  {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        
+        builder.setTitle(title);
+        builder.setCancelable(cancelable);
+        builder.setMessage(message);
+        builder.setPositiveButton(positiveLabel, positiveOnClick);
+        builder.setNegativeButton(negativeLabel, negativeOnClick);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        return alert;
     }
 
     public void setActivity(Activity activity) {
