@@ -38,7 +38,7 @@ class App extends Component {
 
     WireCard.checkMaquininhaStatus(callback => {
       this.updateMaquininhaStatus();
-      
+
       Alert.alert(
         'Alert Title',
         callback,
@@ -120,9 +120,11 @@ class App extends Component {
 
         <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
 
-        <TouchableOpacity onPress={this.charge} disabled={!SDKInitializated && !maquininhaConnected}>
-          <Text style={styles.instructions}>Realizar pagamento</Text>
-        </TouchableOpacity>
+        {SDKInitializated && maquininhaConnected && (
+          <TouchableOpacity onPress={this.charge}>
+            <Text style={styles.instructions}>Realizar pagamento</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
