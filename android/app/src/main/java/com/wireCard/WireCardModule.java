@@ -151,8 +151,8 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
                 List items = Arrays.asList(itemRequest);
 
-                MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.DEBIT
-                        : MposPaymentRequest.Type.CREDIT;
+                MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.CREDIT
+                        : MposPaymentRequest.Type.DEBIT;
 
                 MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installments).ownId(id)
                         .type(transactionType).items(items);
