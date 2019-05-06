@@ -10,7 +10,25 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 import android.app.Application;
 import android.app.Activity;
+
 import android.widget.Toast;
+
+import android.Manifest;
+
+import android.content.pm.PackageManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.DialogInterface;
+
+import android.net.Uri;
+
+import android.os.Build;
+
+import android.provider.Settings;
+
+import android.support.v4.content.ContextCompat;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
@@ -39,11 +57,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
     private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
     private final String PASSWORD = "2UILDC1B7UI8VCVXADT0TDPB5GSM0EXGKBI0QA2A";
+    private final int PERMISSION_CODE_REQUEST = 1;
 
     private Activity activity;
     private ReactApplicationContext reactContext;
@@ -51,6 +73,9 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private Boolean maquininhaConnected;
     private String status;
     private Boolean statusCleared;
+    private Boolean locationPermissionState;
+    private Boolean storagePermissionState;
+    private Boolean readPhoneStatePermissionState;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -179,6 +204,13 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         }
     }
 
+    /**
+     * Used to works as a background task, listening to all SDK or wirecard pinpad events
+     *
+     * @param callback
+     * @author Lucas Gabriel
+     * @since 26/04/2019
+     */
     private void checkStatus(Callback callback) {
         int delay = 0;
         int interval = 100;
@@ -275,6 +307,30 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getStatusCleared() {
         return this.statusCleared;
+    }
+
+    public void setStoragePermissionState(Boolean storagePermissionState) {
+        this.storagePermissionState = storagePermissionState;
+    }
+
+    public Boolean getStoragePermissionState() {
+        return this.storagePermissionState;
+    }
+
+    public void setLocationPermissionState(Boolean locationPermissionState) {
+        this.locationPermissionState = locationPermissionState;
+    }
+
+    public Boolean getLocationPermissionState() {
+        return this.locationPermissionState;
+    }
+
+    public void setReadPhoneStatePermissionState(Boolean readPhoneStatePermissionState) {
+        this.readPhoneStatePermissionState = readPhoneStatePermissionState;
+    }
+
+    public Boolean getReadPhoneStatePermissionState() {
+        return this.readPhoneStatePermissionState;
     }
 
 }
