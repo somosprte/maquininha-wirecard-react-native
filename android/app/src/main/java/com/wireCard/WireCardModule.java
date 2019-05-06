@@ -166,11 +166,10 @@ public class WireCardModule extends ReactContextBaseJavaModule {
             if (object != null) {
                 String description = String.valueOf(object.get("description"));
                 String details = String.valueOf(object.get("details"));
-                String id = String.valueOf(object.get("id"));
                 int quantity = (Integer) object.get("quantity");
                 int value = (Integer) object.get("value");
                 int type = (Integer) object.get("type");
-                int installments = (Integer) object.get("installments");
+                int installment = (Integer) object.get("installment");
 
                 ItemRequest itemRequest = new ItemRequest(description, quantity, details, value);
 
@@ -179,7 +178,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                 MposPaymentRequest.Type transactionType = type == 1 ? MposPaymentRequest.Type.CREDIT
                         : MposPaymentRequest.Type.DEBIT;
 
-                MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installments).ownId(id)
+                MposPaymentRequest mposPaymentRequest = new MposPaymentRequest().installment(installment)
                         .type(transactionType).items(items);
 
                 MoipMpos.charge(this.activity, mposPaymentRequest, new MposCallback() {
