@@ -13,23 +13,6 @@ import android.app.Activity;
 
 import android.widget.Toast;
 
-import android.Manifest;
-
-import android.content.pm.PackageManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.DialogInterface;
-
-import android.net.Uri;
-
-import android.os.Build;
-
-import android.provider.Settings;
-
-import android.support.v4.content.ContextCompat;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AlertDialog;
-
 import br.com.moip.authentication.Authentication;
 import br.com.moip.authentication.BasicAuth;
 
@@ -61,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import java.lang.Exception;
+
 public class WireCardModule extends ReactContextBaseJavaModule {
 
     private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
@@ -73,9 +58,6 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     private Boolean maquininhaConnected;
     private String status;
     private Boolean statusCleared;
-    private Boolean locationPermissionState;
-    private Boolean storagePermissionState;
-    private Boolean readPhoneStatePermissionState;
 
     public WireCardModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -100,7 +82,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void init(Callback callback) {
+    public void init(Callback callback) throws Exception {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
@@ -249,12 +231,6 @@ public class WireCardModule extends ReactContextBaseJavaModule {
             case String:
                 object.put(key, map.getString(key));
                 break;
-            // case Map:
-            // object.put(key, convertMapToJson(readableMap.getMap(key)));
-            // break;
-            // case Array:
-            // object.put(key, convertArrayToJson(readableMap.getArray(key)));
-            // break;
             }
         }
         return object;
@@ -306,30 +282,6 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
     public Boolean getStatusCleared() {
         return this.statusCleared;
-    }
-
-    public void setStoragePermissionState(Boolean storagePermissionState) {
-        this.storagePermissionState = storagePermissionState;
-    }
-
-    public Boolean getStoragePermissionState() {
-        return this.storagePermissionState;
-    }
-
-    public void setLocationPermissionState(Boolean locationPermissionState) {
-        this.locationPermissionState = locationPermissionState;
-    }
-
-    public Boolean getLocationPermissionState() {
-        return this.locationPermissionState;
-    }
-
-    public void setReadPhoneStatePermissionState(Boolean readPhoneStatePermissionState) {
-        this.readPhoneStatePermissionState = readPhoneStatePermissionState;
-    }
-
-    public Boolean getReadPhoneStatePermissionState() {
-        return this.readPhoneStatePermissionState;
     }
 
 }
