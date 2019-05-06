@@ -97,9 +97,9 @@ class App extends Component {
     const item = {
       description: 'Produto/Serviço',
       quantity: 1,
-      value: 1,
+      value: 100,
       details: 'Teste',
-      installments: 2,
+      installment: 2,
       id: 'TESTE TESTE',
       type: 1,
       secondary: '',
