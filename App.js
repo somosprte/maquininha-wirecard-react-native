@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, NativeModules, Alert, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, Alert, TouchableOpacity, PermissionsAndroid } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,6 +24,9 @@ class App extends Component {
   state = {
     maquininhaConnected: false,
     SDKInitializated: false,
+    locationPermission: false,
+    externalStoragePermission: false,
+    readPhoneStatePermission: false,
   };
 
   checkMaquininhaStatus = () => {
@@ -44,12 +47,28 @@ class App extends Component {
     });
   }
 
-  init = () => {
+  init = async () => {
     const { WireCard } = NativeModules;
 
-    WireCard.init(callback => {
-      this.updateSDKStatus();
-    });
+    try {
+      const permissions = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
+      ]);
+      await console.log(permissions.android.permission.ACCESS_FINE_LOCATION);
+      await this.setState({
+        locationPermission: permissions.android.permission.ACCESS_FINE_LOCATION === 'granted',
+        readPhoneStatePermission: permissions.android.permission.READ_PHONE_STATE === 'granted',
+        externalStoragePermission: permissions.android.permission.WRITE_EXTERNAL_STORAGE = 'granted',
+      });
+    } catch (err) {
+      console.warn(err);
+    }
+
+    // WireCard.init(callback => {
+    //   this.updateSDKStatus();
+    // });
   }
 
   updateSDKStatus = () => {
