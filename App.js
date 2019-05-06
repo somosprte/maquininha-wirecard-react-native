@@ -29,6 +29,26 @@ class App extends Component {
     readPhoneStatePermission: false,
   };
 
+  async componentDidMount() {
+    try {
+      const permissions = [
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE
+      ];
+
+      const granted = await PermissionsAndroid.requestMultiple(permissions);
+
+      this.setState({
+        locationPermission: granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED,
+        readPhoneStatePermission: granted["android.permission.READ_PHONE_STATE"] === PermissionsAndroid.RESULTS.GRANTED,
+        externalStoragePermission: granted["android.permission.WRITE_EXTERNAL_STORAGE"] === PermissionsAndroid.RESULTS.GRANTED,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   checkMaquininhaStatus = () => {
     const { WireCard } = NativeModules;
 
@@ -50,25 +70,9 @@ class App extends Component {
   init = async () => {
     const { WireCard } = NativeModules;
 
-    try {
-      const permissions = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
-      ]);
-      await console.log(permissions.android.permission.ACCESS_FINE_LOCATION);
-      await this.setState({
-        locationPermission: permissions.android.permission.ACCESS_FINE_LOCATION === 'granted',
-        readPhoneStatePermission: permissions.android.permission.READ_PHONE_STATE === 'granted',
-        externalStoragePermission: permissions.android.permission.WRITE_EXTERNAL_STORAGE = 'granted',
-      });
-    } catch (err) {
-      console.warn(err);
-    }
-
-    // WireCard.init(callback => {
-    //   this.updateSDKStatus();
-    // });
+    WireCard.init(callback => {
+      this.updateSDKStatus();
+    });
   }
 
   updateSDKStatus = () => {
