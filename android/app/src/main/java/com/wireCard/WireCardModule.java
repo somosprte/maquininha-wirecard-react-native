@@ -46,6 +46,8 @@ import java.util.HashMap;
 
 import java.lang.Exception;
 
+import com.google.gson.Gson;
+
 public class WireCardModule extends ReactContextBaseJavaModule {
 
     private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
@@ -148,7 +150,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                 String description = String.valueOf(object.get("description"));
                 String details = String.valueOf(object.get("details"));
                 int quantity = (Integer) object.get("quantity");
-                double value = (Double) object.get("value");
+                int value = (Integer) object.get("value");
                 int type = (Integer) object.get("type");
                 int installment = (Integer) object.get("installment");
 
@@ -171,7 +173,8 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
                     @Override
                     public void onSuccess(MposPaymentResponse mposPaymentResponse) {
-                        callback.invoke(mposPaymentResponse.toString());
+                        Gson gson = new Gson();
+                        callback.invoke(gson.toJson(mposPaymentResponse));
                         setStatusCleared(false);
                     }
 
@@ -225,7 +228,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                 object.put(key, map.getBoolean(key));
                 break;
             case Number:
-                object.put(key, map.getDouble(key));
+                object.put(key, map.getInt(key));
                 break;
             case String:
                 object.put(key, map.getString(key));
