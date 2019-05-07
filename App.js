@@ -117,20 +117,17 @@ class App extends Component {
     const item = {
       description: data.description,
       quantity: Number(data.quantity),
-      value: this.moneyField.getRawValue(),
+      value: Number(data.value.substring(data.value.lastIndexOf("$") + 1).replace(",", "")),
       details: data.details,
       installment: Number(data.installment),
       type: 1,
     };
 
-    console.log(item);
-
-    WireCard.charge(item, (callback) => {
+    WireCard.charge(item, (payment) => {
       Alert.alert(
-        'Alert Title',
-        callback,
+        'Pagamento',
+        this.getPaymentStatus(JSON.parse(payment)),
         [
-          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
           { text: 'OK', onPress: () => { } },
         ],
         { cancelable: false },
@@ -142,6 +139,29 @@ class App extends Component {
     const { data } = this.state;
 
     this.setState({ data: { ...data, [name]: value }});
+  }
+
+  getPaymentStatus = payment => {
+    switch(payment.status) {
+      case 'CREATED':
+        return 'Criado';
+      case 'WAITING':
+        return 'Aguardando pagamento';
+      case 'IN_ANALYSIS':
+        return 'Em análise';
+      case 'PRE_AUTHORIZED':
+        return 'Pré-autorizado';
+      case 'AUTHORIZED':
+        return 'Autorizado';
+      case 'CANCELLED':
+        return 'Cancelado';
+      case 'REFUNDED':
+        return 'Eeembolsado';
+      case 'REVERSED':
+        return 'Estornado';
+      case 'SETTLED':
+        return 'Concluído';
+    }
   }
 
   render() {
