@@ -18,8 +18,6 @@ import br.com.moip.authentication.BasicAuth;
 
 import br.com.moip.request.ItemRequest;
 import br.com.moip.request.MposRequest;
-import br.com.moip.request.ReceiverRequest;
-import br.com.moip.request.AmountRequest;
 
 import br.com.moip.mpos.MoipMpos;
 import br.com.moip.mpos.MposError;
@@ -32,7 +30,6 @@ import br.com.moip.mpos.callback.MposCallback;
 import br.com.moip.mpos.model.request.MposPaymentRequest;
 import br.com.moip.mpos.model.response.MposPaymentResponse;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,9 +37,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 import java.lang.Exception;
 
