@@ -1,5 +1,16 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, NativeModules, Alert, TouchableOpacity, PermissionsAndroid } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  NativeModules,
+  Alert,
+  TouchableOpacity,
+  PermissionsAndroid,
+  TextInput,
+  ScrollView,
+} from 'react-native';
+import { TextInputMask } from 'react-native-masked-text';
 
 const styles = StyleSheet.create({
   container: {
@@ -27,6 +38,14 @@ class App extends Component {
     locationPermission: false,
     externalStoragePermission: false,
     readPhoneStatePermission: false,
+    data: {},
+    options: {
+      precision: 2,
+      separator: ',',
+      delimiter: '.',
+      unit: 'R$',
+      suffixUnit: ''
+    },
   };
 
   async componentDidMount() {
@@ -93,18 +112,18 @@ class App extends Component {
 
   charge = () => {
     const { WireCard } = NativeModules;
+    const { data } = this.state;
 
     const item = {
-      description: 'Produto/Serviço',
-      quantity: 1,
-      value: 100,
-      details: 'Teste',
-      installment: 2,
-      id: 'TESTE TESTE',
+      description: data.description,
+      quantity: Number(data.quantity),
+      value: this.moneyField.getRawValue(),
+      details: data.details,
+      installment: Number(data.installment),
       type: 1,
-      secondary: '',
-      amount: 2,
     };
+
+    console.log(item);
 
     WireCard.charge(item, (callback) => {
       Alert.alert(
@@ -119,12 +138,26 @@ class App extends Component {
     });
   }
 
+  handleChangeInput = (name, value) => {
+    const { data } = this.state;
+
+    this.setState({ data: { ...data, [name]: value }});
+  }
+
   render() {
-    const { SDKInitializated, maquininhaConnected } = this.state;
+    const {
+      SDKInitializated,
+      maquininhaConnected,
+      locationPermission,
+      readPhoneStatePermission,
+      externalStoragePermission,
+      data,
+      options,
+    } = this.state;
 
     return (
-      <View style={styles.container}>
-        <TouchableOpacity onPress={this.init}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity onPress={this.init} disabled={!locationPermission && !readPhoneStatePermission && !externalStoragePermission}>
           <Text style={styles.instructions}>Iniciar SDK</Text>
         </TouchableOpacity>
 
@@ -136,12 +169,53 @@ class App extends Component {
 
         <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
 
+        <TextInput
+          underlineColorAndroid="transparent"
+          placeholder="Descrição"
+          value={data.description}
+          onChangeText={value => this.handleChangeInput('description', value)}
+        />
+
+        <TextInput
+          underlineColorAndroid="transparent"
+          placeholder="Detalhes"
+          value={data.details}
+          onChangeText={value => this.handleChangeInput('details', value)}
+        />
+
+        <TextInput
+          underlineColorAndroid="transparent"
+          placeholder="Quantidade"
+          keyboardType="numeric"
+          value={data.quantity}
+          onChangeText={value => this.handleChangeInput('quantity', value)}
+        />
+
+        <TextInputMask
+          type="money"
+          underlineColorAndroid="transparent"
+          placeholder="Valor (R$)"
+          keyboardType="numeric"
+          value={data.value}
+          onChangeText={value => this.handleChangeInput('value', value)}
+          ref={(ref) => this.moneyField = ref}
+        />
+
+        <TextInput
+          underlineColorAndroid="transparent"
+          placeholder="Parcelas"
+          keyboardType="numeric"
+          value={data.installment}
+          onChangeText={value => this.handleChangeInput('installment', value)}
+        />
+
+
         {SDKInitializated && maquininhaConnected && (
           <TouchableOpacity onPress={this.charge}>
             <Text style={styles.instructions}>Realizar pagamento</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </ScrollView>
     );
   }
 }
