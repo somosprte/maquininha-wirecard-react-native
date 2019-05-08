@@ -7,10 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   PermissionsAndroid,
-  TextInput,
-  ScrollView,
 } from 'react-native';
-import { TextInputMask } from 'react-native-masked-text';
 
 const styles = StyleSheet.create({
   container: {
@@ -38,14 +35,6 @@ class App extends Component {
     locationPermission: false,
     externalStoragePermission: false,
     readPhoneStatePermission: false,
-    data: {},
-    options: {
-      precision: 2,
-      separator: ',',
-      delimiter: '.',
-      unit: 'R$',
-      suffixUnit: ''
-    },
   };
 
   async componentDidMount() {
@@ -111,15 +100,14 @@ class App extends Component {
 
   charge = () => {
     const { WireCard } = NativeModules;
-    const { data } = this.state;
 
     const item = {
-      description: data.description,
-      quantity: Number(data.quantity),
-      value: Number(data.value.substring(data.value.lastIndexOf("$") + 1).replace(",", "")),
-      details: data.details,
-      installment: Number(data.installment),
-      type: 0,
+      description: 'Compra de produto', // Descrição do produto.
+      quantity: 2, // Quantidade de produtos comprados.
+      value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
+      details: 'Detalhes da compra do produto', // Detalhes da compra.
+      installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
+      type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
     };
 
     WireCard.charge(item, (payment) => {
@@ -170,12 +158,10 @@ class App extends Component {
       locationPermission,
       readPhoneStatePermission,
       externalStoragePermission,
-      data,
-      options,
     } = this.state;
 
     return (
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         <TouchableOpacity onPress={this.init} disabled={!locationPermission && !readPhoneStatePermission && !externalStoragePermission}>
           <Text style={styles.instructions}>Iniciar SDK</Text>
         </TouchableOpacity>
@@ -188,53 +174,12 @@ class App extends Component {
 
         <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
 
-        <TextInput
-          underlineColorAndroid="transparent"
-          placeholder="Descrição"
-          value={data.description}
-          onChangeText={value => this.handleChangeInput('description', value)}
-        />
-
-        <TextInput
-          underlineColorAndroid="transparent"
-          placeholder="Detalhes"
-          value={data.details}
-          onChangeText={value => this.handleChangeInput('details', value)}
-        />
-
-        <TextInput
-          underlineColorAndroid="transparent"
-          placeholder="Quantidade"
-          keyboardType="numeric"
-          value={data.quantity}
-          onChangeText={value => this.handleChangeInput('quantity', value)}
-        />
-
-        <TextInputMask
-          type="money"
-          underlineColorAndroid="transparent"
-          placeholder="Valor (R$)"
-          keyboardType="numeric"
-          value={data.value}
-          onChangeText={value => this.handleChangeInput('value', value)}
-          ref={(ref) => this.moneyField = ref}
-        />
-
-        <TextInput
-          underlineColorAndroid="transparent"
-          placeholder="Parcelas"
-          keyboardType="numeric"
-          value={data.installment}
-          onChangeText={value => this.handleChangeInput('installment', value)}
-        />
-
-
         {SDKInitializated && maquininhaConnected && (
           <TouchableOpacity onPress={this.charge}>
             <Text style={styles.instructions}>Realizar pagamento</Text>
           </TouchableOpacity>
         )}
-      </ScrollView>
+      </View>
     );
   }
 }
