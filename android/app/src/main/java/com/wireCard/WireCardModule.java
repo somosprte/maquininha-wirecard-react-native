@@ -44,8 +44,8 @@ import com.google.gson.Gson;
 
 public class WireCardModule extends ReactContextBaseJavaModule {
 
-    private final String TOKEN = "AI6P4DIYJVFPARN1JM81T9TW5XWJAA2N";
-    private final String PASSWORD = "2UILDC1B7UI8VCVXADT0TDPB5GSM0EXGKBI0QA2A";
+    private final String TOKEN = "*** TOKEN ***";
+    private final String PASSWORD = "*** PASSWORD ***";
 
     private Activity activity;
     private ReactApplicationContext reactContext;
@@ -81,12 +81,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
             if (authentication == null) {
-                Toast.makeText(getReactContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
+                Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
             } else {
                 setStatusCleared(false);
                 MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
@@ -109,7 +109,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
                 public void onSuccess() {
@@ -136,7 +136,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             JSONObject object = convertMapToJson(item);
 
@@ -182,7 +182,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
     }
 
     /**
-     * Used to works as a background task, listening to all SDK or wirecard pinpad events
+     * Método utilizado para ficar "escutando" as alterações de estado do SDK e/ou da conexão com a maquininha.
      *
      * @param callback
      * @author Lucas Gabriel
@@ -209,6 +209,14 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         }, delay, interval);
     }
 
+    /**
+     * Método utilizado para extrair os dados recebidos do Javascript e transformar em um objeto de onde
+     * possam ser extraídos os valores necessários para as funcionalidades.
+     *
+     * @param map
+     * @return JSONObject
+     * @throws JSONException
+     */
     private static JSONObject convertMapToJson(ReadableMap map) throws JSONException {
         JSONObject object = new JSONObject();
         ReadableMapKeySetIterator iterator = map.keySetIterator();
