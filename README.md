@@ -2,7 +2,7 @@
 
 Implementação de bridge para integração do SDK do moip à sua aplicação Android, desenvolvida em react-native.
 
-# Uso
+# Guia de uso
 
 Para utilizar a bridge em seu projeto clone o repositório
 
