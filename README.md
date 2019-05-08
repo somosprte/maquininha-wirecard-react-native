@@ -52,6 +52,15 @@ Adicione as seguintes permissões ao AndroidManifest
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 ```
 
+Além das permissões acima, as permissões abaixo são necessárias para que o SDK seja executado, suas solicitações devem ser feitas em tempo de execução da aplicação, e é recomendado que seja feito ao início da aplicação como um todo. Juntamente com as demais permissões de execução da aplicação.
+
+```java
+
+    android.permission.ACCESS_FINE_LOCATION
+    android.permission.READ_PHONE_STATE
+    android.permission.WRITE_EXTERNAL_STORAGE
+```
+
 Os arquivos da bridge se encontram no pacote java.com.wireCard, copie-os na mesma estrutura, para a sua aplicação. e altere as informações referentes às suas credenciais do wirecard e o ambiente de execução do SDK. Lembrando que, esta implementação utiliza o método BasicAuth de autenticação.
 
 ```java
