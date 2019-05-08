@@ -81,12 +81,12 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             Authentication authentication = new BasicAuth(TOKEN, PASSWORD);
 
             if (authentication == null) {
-                Toast.makeText(getReactApplicationContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
+                Toast.makeText(getReactContext(), "Falha na autenticação", Toast.LENGTH_LONG).show();
             } else {
                 setStatusCleared(false);
                 MoipMpos.init(activity, MoipMpos.Enviroment.SANDBOX, authentication, new InitCallback() {
@@ -109,7 +109,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             MoipMpos.isPinpadConnected(activity, new PinpadCallback() {
                 public void onSuccess() {
@@ -136,7 +136,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         this.setActivity(getCurrentActivity());
 
         if (this.getActivity() == null) {
-            Toast.makeText(getReactApplicationContext(), "Erro de activity", Toast.LENGTH_LONG).show();
+            Toast.makeText(getReactContext(), "Erro de activity", Toast.LENGTH_LONG).show();
         } else {
             JSONObject object = convertMapToJson(item);
 
