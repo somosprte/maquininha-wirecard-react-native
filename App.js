@@ -75,10 +75,9 @@ class App extends Component {
       this.updateMaquininhaStatus();
 
       Alert.alert(
-        'Alert Title',
+        'Maquininha',
         callback,
         [
-          { text: 'Cancelar', onPress: () => { }, style: 'cancel' },
           { text: 'OK', onPress: () => { } },
         ],
         { cancelable: false },
@@ -120,7 +119,7 @@ class App extends Component {
       value: Number(data.value.substring(data.value.lastIndexOf("$") + 1).replace(",", "")),
       details: data.details,
       installment: Number(data.installment),
-      type: 1,
+      type: 0,
     };
 
     WireCard.charge(item, (payment) => {
