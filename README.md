@@ -42,9 +42,8 @@ E estas linhas no arquivo android/app/build.gradle
 
 Adicione as seguintes permissões ao AndroidManifest
 
-```java
+```xml
 
-    ...
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
