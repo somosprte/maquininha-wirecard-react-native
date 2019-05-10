@@ -97,7 +97,8 @@ public class WireCardModule extends ReactContextBaseJavaModule {
 
                     public void onError(MposError e) {
                         setSDKInitializated(false);
-                        callback.invoke(e.toString());
+                        Gson gson = new Gson();
+                        callback.invoke(gson.toJson(e));
                     }
                 });
             }
@@ -173,7 +174,8 @@ public class WireCardModule extends ReactContextBaseJavaModule {
                     }
 
                     public void onError(MposError e) {
-                        callback.invoke(e.toString());
+                        Gson gson = new Gson();
+                        callback.invoke(gson.toJson(e));
                         setStatusCleared(false);
                     }
                 });
