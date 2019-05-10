@@ -10,7 +10,31 @@ Para utilizar a bridge em seu projeto clone o repositório
 $ git clone github.com/somosprte/maquininha-wirecard-react-native
 ```
 
-Adicionar as linhas abaixo no arquivo android/build.gradle
+No arquivo java.com.wireCard.WireCardModule.java você deve informar suas credenciais.
+
+```java
+
+    private final String TOKEN = "SEU_TOKEN";
+    private final String PASSWORD = "SEU_PASSWORD";
+```
+
+Após isso, instale as dependências da aplicação
+
+```
+  yarn install
+```
+
+E execute a aplicação em um dispositivo físico Android.
+
+```
+  yarn android
+```
+
+# Estrutura de configuração da aplicação
+
+Se deseja implementar as funcionalidades do SDK em sua aplicação, abaixo estão as informações necessárias para tal.
+
+Adicione primeiramente o uso de repositórios maven em sua aplicação, com as linhas abaixo no arquivo android/build.gradle
 
 ```java
     repositories {
@@ -57,8 +81,6 @@ Além das permissões acima, as permissões abaixo são necessárias para que o 
 ```java
 
     android.permission.ACCESS_FINE_LOCATION
-    android.permission.READ_PHONE_STATE
-    android.permission.WRITE_EXTERNAL_STORAGE
 ```
 
 Os arquivos da bridge se encontram no pacote java.com.wireCard, copie-os na mesma estrutura, para a sua aplicação. e altere as informações referentes às suas credenciais do wirecard e o ambiente de execução do SDK. Lembrando que, esta implementação utiliza o método BasicAuth de autenticação.
