@@ -77,9 +77,24 @@ class App extends Component {
   init = async () => {
     const { WireCard } = NativeModules;
 
-    WireCard.init(callback => {
-      this.updateSDKStatus();
-    });
+    setTimeout(() => {
+      WireCard.init(callback => {
+        const response = JSON.parse(callback);
+
+        if (response !== null) {
+          Alert.alert(
+            'SDK',
+            response.description,
+            [
+              { text: 'OK', onPress: () => { } },
+            ],
+            { cancelable: false },
+          );
+        }
+
+        this.updateSDKStatus();
+      });
+    }, 2000);
   }
 
   updateSDKStatus = () => {
@@ -99,37 +114,42 @@ class App extends Component {
   }
 
   charge = () => {
-    const { WireCard } = NativeModules;
+    const { locationPermission, readPhoneStatePermission, externalStoragePermission } = this.state;
 
-    const item = {
-      description: 'Compra de produto', // Descrição do produto.
-      quantity: 2, // Quantidade de produtos comprados.
-      value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
-      details: 'Detalhes da compra do produto', // Detalhes da compra.
-      installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
-      type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
-    };
+    if (locationPermission && readPhoneStatePermission && externalStoragePermission) {
+      const { WireCard } = NativeModules;
 
-    WireCard.charge(item, (payment) => {
-      Alert.alert(
-        'Pagamento',
-        this.getPaymentStatus(JSON.parse(payment)),
-        [
-          { text: 'OK', onPress: () => { } },
-        ],
-        { cancelable: false },
-      );
-    });
+      const item = {
+        description: 'Compra de produto', // Descrição do produto.
+        quantity: 2, // Quantidade de produtos comprados.
+        value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
+        details: 'Detalhes da compra do produto', // Detalhes da compra.
+        installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
+        type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
+      };
+
+      WireCard.charge(item, (payment) => {
+        const response = JSON.parse(payment);
+        Alert.alert(
+          'Pagamento',
+          response.status ? this.getPaymentStatus(response.status) : response.description,
+          [
+            { text: 'OK', onPress: () => { } },
+          ],
+          { cancelable: false },
+        );
+      });
+    }
   }
 
   handleChangeInput = (name, value) => {
     const { data } = this.state;
 
-    this.setState({ data: { ...data, [name]: value }});
+    this.setState({ data: { ...data, [name]: value } });
   }
 
-  getPaymentStatus = payment => {
-    switch(payment.status) {
+  getPaymentStatus = status => {
+    switch (status) {
       case 'CREATED':
         return 'Criado';
       case 'WAITING':
@@ -155,14 +175,11 @@ class App extends Component {
     const {
       SDKInitializated,
       maquininhaConnected,
-      locationPermission,
-      readPhoneStatePermission,
-      externalStoragePermission,
     } = this.state;
 
     return (
       <View style={styles.container}>
-        <TouchableOpacity onPress={this.init} disabled={!locationPermission && !readPhoneStatePermission && !externalStoragePermission}>
+        <TouchableOpacity onPress={this.init}>
           <Text style={styles.instructions}>Iniciar SDK</Text>
         </TouchableOpacity>
 
