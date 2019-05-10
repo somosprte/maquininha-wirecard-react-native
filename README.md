@@ -81,6 +81,8 @@ Além das permissões acima, as permissões abaixo são necessárias para que o 
 ```java
 
     android.permission.ACCESS_FINE_LOCATION
+    android.permission.WRITE_EXTERNAL_STORAGE
+    android.permission.READ_PHONE_STATE
 ```
 
 Os arquivos da bridge se encontram no pacote java.com.wireCard, copie-os na mesma estrutura, para a sua aplicação. e altere as informações referentes às suas credenciais do wirecard e o ambiente de execução do SDK. Lembrando que, esta implementação utiliza o método BasicAuth de autenticação.
