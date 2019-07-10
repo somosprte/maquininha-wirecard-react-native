@@ -15,25 +15,19 @@ import java.util.List;
 
 public class WireCardPackage implements ReactPackage {
 
-    private Activity activity = null;
+  private Activity activity = null;
 
-    public WireCardPackage(Activity activity) {
-        this.activity = activity;
-    }
+  public WireCardPackage(Activity activity) {
+    this.activity = activity;
+  }
 
-    @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(
-                new WireCardModule(reactContext)
-        );
-    }
+  @Override
+  public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+    return Arrays.<NativeModule>asList(new WireCardModule(reactContext));
+  }
 
-    // public List<Class<? extends JavaScriptModule>> createJSModules() {
-    //     return Collections.emptyList();
-    // }
-
-    @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
-    }
+  @Override
+  public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
+    return Collections.emptyList();
+  }
 }
