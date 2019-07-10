@@ -56,11 +56,12 @@ class App extends Component {
       });
     });
 
-    WireCard.init(initSDKResponse => {
-      WireCard.getSDKStatus(SDKInitializated => {
-        this.setState({ SDKInitializated });
-      });
+    WireCard.init();
+
+    WireCard.getSDKStatus(SDKInitializated => {
+      this.setState({ SDKInitializated });
     });
+
   }
 
   charge = () => {
