@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   PermissionsAndroid,
+  AsyncStorage,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -28,118 +29,63 @@ const styles = StyleSheet.create({
   },
 });
 
+const { WireCard } = NativeModules;
+
 class App extends Component {
   state = {
     maquininhaConnected: false,
     SDKInitializated: false,
-    locationPermission: false,
-    externalStoragePermission: false,
-    readPhoneStatePermission: false,
   };
 
   async componentDidMount() {
-    try {
-      const permissions = [
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE
-      ];
+    const permissions = [
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE
+    ];
 
-      const granted = await PermissionsAndroid.requestMultiple(permissions);
+    const granted = await PermissionsAndroid.requestMultiple(permissions);
 
-      this.setState({
-        locationPermission: granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED,
-        readPhoneStatePermission: granted["android.permission.READ_PHONE_STATE"] === PermissionsAndroid.RESULTS.GRANTED,
-        externalStoragePermission: granted["android.permission.WRITE_EXTERNAL_STORAGE"] === PermissionsAndroid.RESULTS.GRANTED,
+    AsyncStorage.setItem('@App:LOCATION_PERMISSION', JSON.parse(granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED));
+    AsyncStorage.setItem('@App:PHONE_STATE_PERMISSION', JSON.parse(granted["android.permission.READ_PHONE_STATE"] === PermissionsAndroid.RESULTS.GRANTED));
+    AsyncStorage.setItem('@App:EXTERNAL_STORAGE_PERMISSION', JSON.parse(granted["android.permission.WRITE_EXTERNAL_STORAGE"] === PermissionsAndroid.RESULTS.GRANTED));
+
+    WireCard.checkMaquininhaStatus(checkMaquininhaStatusResponse => {
+      WireCard.getMaquininhaStatus(maquininhaConnected => {
+        this.setState({ maquininhaConnected });
       });
-    } catch (error) {
-      console.log(error);
-    }
+    });
+
+    WireCard.init(initSDKResponse => {
+      WireCard.getSDKStatus(SDKInitializated => {
+        this.setState({ SDKInitializated });
+      });
+    });
   }
 
-  checkMaquininhaStatus = () => {
+  charge = () => {
     const { WireCard } = NativeModules;
 
-    WireCard.checkMaquininhaStatus(callback => {
-      this.updateMaquininhaStatus();
+    const item = {
+      description: 'Compra de produto', // Descrição do produto.
+      quantity: 2, // Quantidade de produtos comprados.
+      value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
+      details: 'Detalhes da compra do produto', // Detalhes da compra.
+      installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
+      type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
+    };
 
+    WireCard.charge(item, (payment) => {
+      const response = JSON.parse(payment);
       Alert.alert(
-        'Maquininha',
-        callback,
+        'Pagamento',
+        response.status ? this.getPaymentStatus(response.status) : response.description,
         [
           { text: 'OK', onPress: () => { } },
         ],
         { cancelable: false },
       );
     });
-  }
-
-  init = async () => {
-    const { WireCard } = NativeModules;
-
-    setTimeout(() => {
-      WireCard.init(callback => {
-        const response = JSON.parse(callback);
-
-        if (response !== null) {
-          Alert.alert(
-            'SDK',
-            response.description,
-            [
-              { text: 'OK', onPress: () => { } },
-            ],
-            { cancelable: false },
-          );
-        }
-
-        this.updateSDKStatus();
-      });
-    }, 2000);
-  }
-
-  updateSDKStatus = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.getSDKStatus(SDKInitializated => {
-      this.setState({ SDKInitializated });
-    });
-  }
-
-  updateMaquininhaStatus = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.getMaquininhaStatus(maquininhaConnected => {
-      this.setState({ maquininhaConnected });
-    });
-  }
-
-  charge = () => {
-    const { locationPermission, readPhoneStatePermission, externalStoragePermission } = this.state;
-
-    if (locationPermission && readPhoneStatePermission && externalStoragePermission) {
-      const { WireCard } = NativeModules;
-
-      const item = {
-        description: 'Compra de produto', // Descrição do produto.
-        quantity: 2, // Quantidade de produtos comprados.
-        value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
-        details: 'Detalhes da compra do produto', // Detalhes da compra.
-        installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
-        type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
-      };
-
-      WireCard.charge(item, (payment) => {
-        const response = JSON.parse(payment);
-        Alert.alert(
-          'Pagamento',
-          response.status ? this.getPaymentStatus(response.status) : response.description,
-          [
-            { text: 'OK', onPress: () => { } },
-          ],
-          { cancelable: false },
-        );
-      });
-    }
   }
 
   handleChangeInput = (name, value) => {
@@ -172,30 +118,13 @@ class App extends Component {
   }
 
   render() {
-    const {
-      SDKInitializated,
-      maquininhaConnected,
-    } = this.state;
+    const { SDKInitializated, maquininhaConnected } = this.state;
 
     return (
       <View style={styles.container}>
-        <TouchableOpacity onPress={this.init}>
-          <Text style={styles.instructions}>Iniciar SDK</Text>
+        <TouchableOpacity onPress={this.charge} disabled={!SDKInitializated && !maquininhaConnected}>
+          <Text style={styles.instructions}>Realizar pagamento</Text>
         </TouchableOpacity>
-
-        <Text>SDK {SDKInitializated ? 'inicializado' : 'não inicializado'}</Text>
-
-        <TouchableOpacity onPress={this.checkMaquininhaStatus} disabled={!SDKInitializated}>
-          <Text style={styles.instructions}>Testar conexão com a maquininha</Text>
-        </TouchableOpacity>
-
-        <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
-
-        {SDKInitializated && maquininhaConnected && (
-          <TouchableOpacity onPress={this.charge}>
-            <Text style={styles.instructions}>Realizar pagamento</Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   }
