@@ -72,12 +72,10 @@ public class WireCardModule extends ReactContextBaseJavaModule {
         new InitCallback() {
           public void onSuccess() {
             SDKInitializated = true;
-            callback.invoke("SDK inicializado");
           }
 
           public void onError(MposError e) {
             SDKInitializated = false;
-            callback.invoke(e.toString());
           }
         });
   }
