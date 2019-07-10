@@ -66,8 +66,7 @@ public class WireCardModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void init(Callback callback) {
-    this.callback = callback;
+  public void init() {
     MoipMpos.init(getCurrentActivity(), MoipMpos.Enviroment.SANDBOX, new BasicAuth(TOKEN, PASSWORD),
         new InitCallback() {
           public void onSuccess() {
