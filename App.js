@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   PermissionsAndroid,
+  AsyncStorage,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -37,6 +38,18 @@ class App extends Component {
   };
 
   async componentDidMount() {
+    const permissions = [
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE
+    ];
+
+    const granted = await PermissionsAndroid.requestMultiple(permissions);
+
+    AsyncStorage.setItem('@App:LOCATION_PERMISSION', JSON.parse(granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED));
+    AsyncStorage.setItem('@App:PHONE_STATE_PERMISSION', JSON.parse(granted["android.permission.READ_PHONE_STATE"] === PermissionsAndroid.RESULTS.GRANTED));
+    AsyncStorage.setItem('@App:EXTERNAL_STORAGE_PERMISSION', JSON.parse(granted["android.permission.WRITE_EXTERNAL_STORAGE"] === PermissionsAndroid.RESULTS.GRANTED));
+
     WireCard.checkMaquininhaStatus(checkMaquininhaStatusResponse => {
       WireCard.getMaquininhaStatus(maquininhaConnected => {
         this.setState({ maquininhaConnected });
@@ -109,10 +122,6 @@ class App extends Component {
 
     return (
       <View style={styles.container}>
-        <Text>SDK {SDKInitializated ? 'inicializado' : 'não inicializado'}</Text>
-
-        <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
-
         <TouchableOpacity onPress={this.charge} disabled={!SDKInitializated && !maquininhaConnected}>
           <Text style={styles.instructions}>Realizar pagamento</Text>
         </TouchableOpacity>
