@@ -39,6 +39,20 @@ class App extends Component {
 
   async componentDidMount() {
     try {
+      const { WireCard } = NativeModules;
+
+      WireCard.checkMaquininhaStatus(checkMaquininhaStatusResponse => {
+        WireCard.getMaquininhaStatus(maquininhaConnected => {
+          this.setState({ maquininhaConnected });
+        });
+      });
+
+      WireCard.init(initSDKResponse => {
+        WireCard.getSDKStatus(SDKInitializated => {
+          this.setState({ SDKInitializated });
+        });
+      });
+
       const permissions = [
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -55,62 +69,6 @@ class App extends Component {
     } catch (error) {
       console.log(error);
     }
-  }
-
-  checkMaquininhaStatus = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.checkMaquininhaStatus(callback => {
-      this.updateMaquininhaStatus();
-
-      Alert.alert(
-        'Maquininha',
-        callback,
-        [
-          { text: 'OK', onPress: () => { } },
-        ],
-        { cancelable: false },
-      );
-    });
-  }
-
-  init = async () => {
-    const { WireCard } = NativeModules;
-
-    setTimeout(() => {
-      WireCard.init(callback => {
-        const response = JSON.parse(callback);
-
-        if (response !== null) {
-          Alert.alert(
-            'SDK',
-            response.description,
-            [
-              { text: 'OK', onPress: () => { } },
-            ],
-            { cancelable: false },
-          );
-        }
-
-        this.updateSDKStatus();
-      });
-    }, 2000);
-  }
-
-  updateSDKStatus = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.getSDKStatus(SDKInitializated => {
-      this.setState({ SDKInitializated });
-    });
-  }
-
-  updateMaquininhaStatus = () => {
-    const { WireCard } = NativeModules;
-
-    WireCard.getMaquininhaStatus(maquininhaConnected => {
-      this.setState({ maquininhaConnected });
-    });
   }
 
   charge = () => {
@@ -172,30 +130,17 @@ class App extends Component {
   }
 
   render() {
-    const {
-      SDKInitializated,
-      maquininhaConnected,
-    } = this.state;
+    const { SDKInitializated, maquininhaConnected } = this.state;
 
     return (
       <View style={styles.container}>
-        <TouchableOpacity onPress={this.init}>
-          <Text style={styles.instructions}>Iniciar SDK</Text>
-        </TouchableOpacity>
-
         <Text>SDK {SDKInitializated ? 'inicializado' : 'não inicializado'}</Text>
-
-        <TouchableOpacity onPress={this.checkMaquininhaStatus} disabled={!SDKInitializated}>
-          <Text style={styles.instructions}>Testar conexão com a maquininha</Text>
-        </TouchableOpacity>
 
         <Text>Maquininha {maquininhaConnected ? 'conectada' : 'desconectada'}</Text>
 
-        {SDKInitializated && maquininhaConnected && (
-          <TouchableOpacity onPress={this.charge}>
-            <Text style={styles.instructions}>Realizar pagamento</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={this.charge} disabled={!SDKInitializated && !maquininhaConnected}>
+          <Text style={styles.instructions}>Realizar pagamento</Text>
+        </TouchableOpacity>
       </View>
     );
   }
