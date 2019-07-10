@@ -28,76 +28,51 @@ const styles = StyleSheet.create({
   },
 });
 
+const { WireCard } = NativeModules;
+
 class App extends Component {
   state = {
     maquininhaConnected: false,
     SDKInitializated: false,
-    locationPermission: false,
-    externalStoragePermission: false,
-    readPhoneStatePermission: false,
   };
 
   async componentDidMount() {
-    try {
-      const { WireCard } = NativeModules;
-
-      WireCard.checkMaquininhaStatus(checkMaquininhaStatusResponse => {
-        WireCard.getMaquininhaStatus(maquininhaConnected => {
-          this.setState({ maquininhaConnected });
-        });
+    WireCard.checkMaquininhaStatus(checkMaquininhaStatusResponse => {
+      WireCard.getMaquininhaStatus(maquininhaConnected => {
+        this.setState({ maquininhaConnected });
       });
+    });
 
-      WireCard.init(initSDKResponse => {
-        WireCard.getSDKStatus(SDKInitializated => {
-          this.setState({ SDKInitializated });
-        });
+    WireCard.init(initSDKResponse => {
+      WireCard.getSDKStatus(SDKInitializated => {
+        this.setState({ SDKInitializated });
       });
-
-      const permissions = [
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE
-      ];
-
-      const granted = await PermissionsAndroid.requestMultiple(permissions);
-
-      this.setState({
-        locationPermission: granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED,
-        readPhoneStatePermission: granted["android.permission.READ_PHONE_STATE"] === PermissionsAndroid.RESULTS.GRANTED,
-        externalStoragePermission: granted["android.permission.WRITE_EXTERNAL_STORAGE"] === PermissionsAndroid.RESULTS.GRANTED,
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    });
   }
 
   charge = () => {
-    const { locationPermission, readPhoneStatePermission, externalStoragePermission } = this.state;
+    const { WireCard } = NativeModules;
 
-    if (locationPermission && readPhoneStatePermission && externalStoragePermission) {
-      const { WireCard } = NativeModules;
+    const item = {
+      description: 'Compra de produto', // Descrição do produto.
+      quantity: 2, // Quantidade de produtos comprados.
+      value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
+      details: 'Detalhes da compra do produto', // Detalhes da compra.
+      installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
+      type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
+    };
 
-      const item = {
-        description: 'Compra de produto', // Descrição do produto.
-        quantity: 2, // Quantidade de produtos comprados.
-        value: 100, // Valor unitário do produto, deve ser enviado um valor inteiro para o SDK. 100 = R$ 1,00.
-        details: 'Detalhes da compra do produto', // Detalhes da compra.
-        installment: 1, // Número das parcelas, utilizado apenas para compras com cartão de crédito.
-        type: 1, // Flag utilizada para determinar se a compra deve ser realizada no crédito ou no débito.
-      };
-
-      WireCard.charge(item, (payment) => {
-        const response = JSON.parse(payment);
-        Alert.alert(
-          'Pagamento',
-          response.status ? this.getPaymentStatus(response.status) : response.description,
-          [
-            { text: 'OK', onPress: () => { } },
-          ],
-          { cancelable: false },
-        );
-      });
-    }
+    WireCard.charge(item, (payment) => {
+      const response = JSON.parse(payment);
+      Alert.alert(
+        'Pagamento',
+        response.status ? this.getPaymentStatus(response.status) : response.description,
+        [
+          { text: 'OK', onPress: () => { } },
+        ],
+        { cancelable: false },
+      );
+    });
   }
 
   handleChangeInput = (name, value) => {
